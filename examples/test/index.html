@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/png" href="../favicon.png"/>
+    <title>Grain - Test</title>
+    <link href="../style.css" rel="stylesheet"/>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script type="module">
+    import {Context, Function, Buffer, BufferFormat, BufferType} from '../../lib/esm';
+
+    let ctx = new Context(document.getElementById("canvas"));
+
+    let N = 2048;
+
+    let data = new Buffer(ctx, N, N, BufferType.Byte, BufferFormat.R,
+        new Uint8Array(Array.from({length: N*N}, _ => Math.random() >= 0.5 ? 255 : 0)));
+
+    let buffer = new Buffer(ctx, N, N, BufferType.Byte, BufferFormat.R);
+
+    let simulation = new Function(ctx, { data }, data, `
+        int get(int x, int y) { return int(data(x, y).r > .5); }
+
+        void main() {
+            int status = get(0, 0);
+            int count = get( 0,  1) + get( 1,  1) + get( 1,  0) + get( 1, -1) +
+                        get( 0, -1) + get(-1, -1) + get(-1,  0) + get(-1,  1);
+
+            result = vec4((status == 1 && (count == 2 || count == 3)) || (status == 0 && count == 3));
+        }
+    `);
+
+    let history = new Function(ctx, { data, buffer }, buffer, `
+        void main() {
+            result.r = bool(data().r) ? 1. : buffer().r - 0.02;
+        }
+    `);
+
+    let render = new Function(ctx, { buffer }, null, `
+        void main() {
+            result = vec4(vec3(buffer().r), 1);
+        }
+    `);
+
+    ctx.run(() => {
+        simulation.render();
+        history.render();
+        render.render();
+    });
+
+</script>
+</body>
+</html>
