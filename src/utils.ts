@@ -1,4 +1,4 @@
-export function debounce<T extends Function>(cb: T, wait = 250) {
+export function debounce<T extends Function>(cb: T, wait = 50) {
   let h = 0;
   let callable = (...args: any) => {
     clearTimeout(h);

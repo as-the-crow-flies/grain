@@ -8,9 +8,7 @@ export class Context
   public get height() { return this.gl.canvas.height; }
 
   constructor(canvas: HTMLCanvasElement) {
-    let gl = canvas.getContext("webgl2", {
-      antialias: false
-    });
+    let gl = canvas.getContext("webgl2", { antialias: false });
 
     if (!(gl instanceof WebGL2RenderingContext))
       throw new Error("WebGL2 not supported for canvas");
